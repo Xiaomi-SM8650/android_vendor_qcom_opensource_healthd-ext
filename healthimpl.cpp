@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -39,11 +39,15 @@ using ::android::hardware::health::V2_1::IHealth;
 using namespace std::literals;
 
 namespace {
-void qti_healthd_board_init(struct healthd_config *)
+
+constexpr char ucsiPSYName[]{"ucsi-source-psy-soc:qcom,pmic_glink:qcom,ucsi1"};
+
+void qti_healthd_board_init(struct healthd_config *hc)
 {
     int fd;
     unsigned char retries = 50;
 
+    hc->ignorePowerSupplyNames.push_back(android::String8(ucsiPSYName));
 retry:
     if (!retries) {
         ALOGE("Cannot open battery/capacity, fd=%d\n", fd);
