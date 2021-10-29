@@ -45,7 +45,9 @@ constexpr char ucsiPSYName[]{"ucsi-source-psy-soc:qcom,pmic_glink:qcom,ucsi1"};
 void qti_healthd_board_init(struct healthd_config *hc)
 {
     int fd;
-    unsigned char retries = 50;
+    unsigned char retries = 75;
+    int ret = 0;
+    unsigned char buf;
 
     hc->ignorePowerSupplyNames.push_back(android::String8(ucsiPSYName));
 retry:
@@ -56,7 +58,20 @@ retry:
 
     fd = open("/sys/class/power_supply/battery/capacity", 0440);
     if (fd >= 0) {
-        ALOGI("opened battery/capacity after %d retries\n", 50 - retries);
+        ALOGI("opened battery/capacity after %d retries\n", 75 - retries);
+        while (retries) {
+            ret = read(fd, &buf, 1);
+            if(ret >= 0) {
+                ALOGI("Read Batt Capacity after %d retries ret : %d\n", 75 - retries, ret);
+                close(fd);
+                return;
+            }
+
+            retries--;
+            usleep(100000);
+        }
+
+        ALOGE("Failed to read Battery Capacity ret=%d\n", ret);
         close(fd);
         return;
     }
